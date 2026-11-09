@@ -45,7 +45,6 @@
 #include <winpr/stream.h>
 #include <winpr/clipboard.h>
 #include <winpr/path.h>
-#include <winpr/interlocked.h>
 
 #include <freerdp/utils/signal.h>
 #include <freerdp/log.h>
@@ -2142,13 +2141,11 @@ static BOOL create_base_path(CliprdrFileContext* file)
 {
 	WINPR_ASSERT(file);
 
-	/* A client may host several RDP sessions in one process (e.g. Remmina).
-	 * Each clipboard needs its own FUSE mount, including after reconnecting. */
-	static LONG path_sequence = 0;
-	const LONG sequence = InterlockedIncrement(&path_sequence);
+	/* Multiple RDP sessions can share a process, so include the clipboard
+	 * context address to keep their FUSE mount points separate. */
 	char base[64] = WINPR_C_ARRAY_INIT;
-	(void)_snprintf(base, sizeof(base), "com.freerdp.client.cliprdr.%" PRIu32 ".%" PRId32,
-	                GetCurrentProcessId(), sequence);
+	(void)_snprintf(base, sizeof(base), "com.freerdp.client.cliprdr.%" PRIu32 ".%p",
+	                GetCurrentProcessId(), (void*)file);
 
 	file->path = GetKnownSubPath(KNOWN_PATH_TEMP, base);
 	if (!file->path)
