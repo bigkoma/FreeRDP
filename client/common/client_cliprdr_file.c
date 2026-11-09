@@ -2145,9 +2145,9 @@ static BOOL create_base_path(CliprdrFileContext* file)
 	/* A client may host several RDP sessions in one process (e.g. Remmina).
 	 * Each clipboard needs its own FUSE mount, including after reconnecting. */
 	static LONG path_sequence = 0;
-	const UINT32 sequence = (UINT32)InterlockedIncrement(&path_sequence);
+	const LONG sequence = InterlockedIncrement(&path_sequence);
 	char base[64] = WINPR_C_ARRAY_INIT;
-	(void)_snprintf(base, sizeof(base), "com.freerdp.client.cliprdr.%" PRIu32 ".%" PRIu32,
+	(void)_snprintf(base, sizeof(base), "com.freerdp.client.cliprdr.%" PRIu32 ".%" PRId32,
 	                GetCurrentProcessId(), sequence);
 
 	file->path = GetKnownSubPath(KNOWN_PATH_TEMP, base);
